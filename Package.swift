@@ -1,4 +1,4 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.4
 
 import PackageDescription
 import Foundation
@@ -96,6 +96,11 @@ let package = Package(
     .target(
       name: "lit-test-helper",
       dependencies: ["SwiftSyntax", "SwiftSyntaxParser"]
+    ),
+    .executableTarget(
+        name: "SwiftSyntaxBuilderGeneration",
+        dependencies: ["SwiftSyntaxBuilder"],
+        path: "Sources/SwiftSyntaxBuilderGeneration"
     ),
     .testTarget(
       name: "SwiftSyntaxTest",

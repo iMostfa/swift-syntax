@@ -20,6 +20,8 @@ SOURCES_DIR = os.path.join(PACKAGE_DIR, "Sources")
 SWIFTSYNTAX_DIR = os.path.join(SOURCES_DIR, "SwiftSyntax")
 SWIFTSYNTAXBUILDER_DIR = os.path.join(SOURCES_DIR, "SwiftSyntaxBuilder")
 SWIFTSYNTAXPARSER_DIR = os.path.join(SOURCES_DIR, "SwiftSyntaxParser")
+SWIFTSYNTAXBUILDERGENERATION_DIR = \
+        os.path.join(SOURCES_DIR, "SwiftSyntaxBuilderGeneration")
 
 LLVM_DIR = os.path.join(WORKSPACE_DIR, "llvm-project", "llvm")
 SWIFT_DIR = os.path.join(WORKSPACE_DIR, "swift")
@@ -286,6 +288,13 @@ def generate_gyb_files(
     )
     generate_gyb_files_helper(
         SWIFTSYNTAXPARSER_DIR, 
+        swiftsyntaxparser_destination,
+        gyb_exec, 
+        add_source_locations, 
+        verbose
+    )
+    generate_gyb_files_helper(
+        SWIFTSYNTAXBUILDERGENERATION_DIR, 
         swiftsyntaxparser_destination,
         gyb_exec, 
         add_source_locations, 
