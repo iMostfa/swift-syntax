@@ -722,10 +722,7 @@ public extension TokenSyntax {
   }
   /// The `open` token
   static var open: TokenSyntax {
-        SyntaxFactory
-          .makeContextualKeyword("open")
+        SyntaxFactory.makeContextualKeyword("open")
           .withTrailingTrivia(.spaces(1))
-
-          
     }
 }
