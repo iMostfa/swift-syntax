@@ -720,4 +720,8 @@ public extension TokenSyntax {
   static var eof: TokenSyntax {
     SyntaxFactory.makeToken(.eof, presence: .present)
   }
+  /// The `open` token
+  static var open: TokenSyntax {
+        SyntaxFactory.makeContextualKeyword("open")
+    }
 }
