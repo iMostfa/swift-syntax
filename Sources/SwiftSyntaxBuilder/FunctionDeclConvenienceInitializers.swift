@@ -36,7 +36,7 @@ extension FunctionDecl {
     )
   }
 
-    func withComment(_ text: String) -> FunctionDecl {
+  public func withComment(_ text: String) -> FunctionDecl {
         FunctionDecl.init(attributes: self.attributes,
                           modifiers: self.modifiers,
                           funcKeyword: self.funcKeyword.withLeadingTrivia(.docBlockComment(text)),
