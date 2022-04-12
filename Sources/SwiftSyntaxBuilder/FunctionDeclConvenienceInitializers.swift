@@ -35,4 +35,16 @@ extension FunctionDecl {
       body: bodyBuilder()
     )
   }
+
+    func withComment(_ text: String) -> FunctionDecl {
+        FunctionDecl.init(attributes: self.attributes,
+                          modifiers: self.modifiers,
+                          funcKeyword: self.funcKeyword.withLeadingTrivia(.docBlockComment(text)),
+                          identifier: self.identifier,
+                          genericParameterClause: self.genericParameterClause,
+                          signature: self.signature,
+                          genericWhereClause: self.genericWhereClause,
+                          body: self.body
+        )
+    }
 }
