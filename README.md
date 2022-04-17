@@ -1,58 +1,97 @@
-# SwiftSyntax
+## Building SwiftSyntaxBuilderGeneration Using SwiftPM and ArgumentParser
+<br>
+Hi, Swift Community ! 
 
-SwiftSyntax is a set of Swift bindings for the
-[libSyntax](https://github.com/apple/swift/tree/main/lib/Syntax) library. It
-allows Swift tools to parse, inspect, generate, and transform Swift source
-code.
+This’s Mostfa, in this repo i’m demonstrating how we can build SwiftSyntaxBuilderGeneration using SwiftPM, as a part of the transition from GYB and python based generation, to swift’s one.
 
-Its API is designed for performance-critical applications. It uses value types almost exclusively and aims to avoid existential conversions where possible.
+i was trying to implement this part of @ahoppen at [Swift’s Forum](https://forums.swift.org/t/gsoc-2022-use-swiftsyntax-itself-to-generate-swiftsyntax-s-source-code-instead-of-gyb/56631/4)
 
-> Note: SwiftSyntax is still in development, and the API is not guaranteed to
-> be stable. It's subject to change without warning.
+> That module could then be compiled using SwiftPM into an executable `generate-swift-syntax-builder` that, when run, generates source code and writes it into the `SwiftSyntaxBuilder` module.
+> 
 
-## Declare SwiftPM dependency with release tag
+building on the work done by [@kimdv #381](https://github.com/kimdv/swift-syntax/tree/kimdv/SwiftSyntaxBuilderGeneration)
 
-Add this repository to the `Package.swift` manifest of your project:
+currently, the files were generting by calling the following at build-script.py
 
-```swift
-// swift-tools-version:5.3
-import PackageDescription
-
-let package = Package(
-  name: "MyTool",
-  dependencies: [
-    .package(name: "SwiftSyntax", url: "https://github.com/apple/swift-syntax.git", .exact("<#Specify Release tag#>")),
-  ],
-  targets: [
-    .target(name: "MyTool", dependencies: ["SwiftSyntax"]),
-  ]
-)
+```python
+generate_gyb_files_helper(
+SWIFTSYNTAXBUILDERGENERATION_DIR,
+swiftsyntaxparser_destination,
+gyb_exec,
+add_source_locations,
+verbose
 ```
 
-Replace `<#Specify Release tag#>` by the version of SwiftSyntax that you want to use (see the following table for mapping details).
+my addition aims to make the build process starts from 
+```SwiftSyntaxBuilderGeneration```
 
-| Xcode Release | Swift Release Tag | SwiftSyntax Release Tag  |
-|:-------------------:|:-------------------:|:-------------------------:|
-| Xcode 13.3   | swift-5.6-RELEASE   | 0.50600.1 |
-| Xcode 13.0   | swift-5.5-RELEASE   | 0.50500.0 |
-| Xcode 12.5   | swift-5.4-RELEASE   | 0.50400.0 |
-| Xcode 12.0   | swift-5.3-RELEASE   | 0.50300.0 |
-| Xcode 11.4   | swift-5.2-RELEASE   | 0.50200.0 |
+### The Goal
+is starting code generation process by calling the following
+<br>
+```zsh
+swift run SwiftSyntaxBuilderGeneration --toolchain /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr
+```
 
-Then, import `SwiftSyntax` in your Swift code.
+### Implemention Details
+<br>
+i've started with adding ```swift-argument-parser``` to ```Package.swift```
+then at ```SwiftSyntaxBuilderGeneration.swift```
 
-## Documentation
+```swift
+import Foundation
+import ArgumentParser
 
-Documentation can be found [here](https://github.com/apple/swift-syntax/blob/main/Documentation) and some examples of using SwiftSyntax can be found [here](https://github.com/apple/swift-syntax/blob/main/Examples).
+@available(macOS 10.13, *)
+@main
+struct SwiftSyntaxBuilderGeneration: ParsableCommand {
+  
+  //we can support @option for python path.
+  @Option(help: "toolchain of swift using in compilation")
+  
+  //TODO: - Support other options
+  var toolchain: URL // <- Supporting toolchain which will be passed to python script
+  
+  mutating func run() throws {
+    
+    let packagePath = getPackagePath() // <- Gets the current Directory of workspace # ../swift-syntax/
+    guard let packagePath = packagePath,
+          let pythonPath = PYTHON_PATH // <- returns URL(fileURLWithPath: "/usr/bin/python"),
+                                       // and we might enable it as an option to passed just like the toolchain.
+    else {
+      return
+    }
+    
+    // just like calling: python swift-syntax/build-script.py
+    let arguments: [String] = [
+      "\(packagePath.absoluteString)build-script.py",
+      "--toolchain",
+      "\(toolchain.absoluteString)"
+    ]
+    
+    // calling the full command with the passed variables
+    try Process.run(pythonPath,
+                    arguments: arguments
+                    , terminationHandler: nil)
+    .run()
+  } 
+}
+```
+<br>
+this implemention works as an wrapper around the currnet build-script.py, but i think it's important to start working on this and preparing for the trainsition to SwiftPM building system
 
-## Contributing
+when 
+```zsh
+swift run SwiftSyntaxBuilderGeneration --toolchain ../Toolchains/XcodeDefault.xctoolchain/usr
+``` 
+is called generating of GYB files starts as implemented. 
 
-Start contributing to SwiftSyntax see [this guide](https://github.com/apple/swift-syntax/blob/main/CONTRIBUTING.md) for more information.
+### Future Improvements
+<br>
+* using SwiftPM we can decouple the usage of pyhon script for building as much as possible 
+* we can suuport more ```@Option```s and arguments
 
-## Reporting Issues
 
-If you should hit any issues while using SwiftSyntax, we appreciate bug reports on [bugs.swift.org](https://bugs.swift.org) in the [SwiftSyntax component](https://bugs.swift.org/issues/?jql=component%20%3D%20SwiftSyntax).
+Thank you, please let me know what do you think about my thoguhts about this topic 
+i'm working on this as a part of my [GSoC Proposal](https://forums.swift.org/t/gsoc-2022-use-swiftsyntax-itself-to-generate-swiftsyntax-s-source-code-instead-of-gyb/56631) and i'm willing to learn more and continue working on it !
 
-## License
-
- Please see [LICENSE](LICENSE.txt) for more information.
+Greetings, Mostfa.
