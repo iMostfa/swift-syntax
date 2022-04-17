@@ -12,8 +12,8 @@ if ProcessInfo.processInfo.environment["SWIFT_BUILD_SCRIPT_ENVIRONMENT"] != nil 
     .appendingPathComponent("utils")
     .appendingPathComponent("group.json")
   swiftSyntaxSwiftSettings = [.unsafeFlags([
-    "-Xfrontend", "-group-info-path", 
-    "-Xfrontend", groupFile.path, 
+    "-Xfrontend", "-group-info-path",
+    "-Xfrontend", groupFile.path,
     // Enforcing exclusivity increases compile time of release builds by 2 minutes.
     // Disable it when we're in a controlled CI environment.
     "-enforce-exclusivity=unchecked",
@@ -41,6 +41,9 @@ let package = Package(
     .library(name: "SwiftSyntax", type: .static, targets: ["SwiftSyntax"]),
     .library(name: "SwiftSyntaxParser", type: .static, targets: ["SwiftSyntaxParser"]),
     .library(name: "SwiftSyntaxBuilder", type: .static, targets: ["SwiftSyntaxBuilder"])
+  ],
+  dependencies: [
+    .package(url: "https://github.com/apple/swift-argument-parser", from: "0.0.4"),
   ],
   targets: [
     .target(
@@ -98,9 +101,11 @@ let package = Package(
       dependencies: ["SwiftSyntax", "SwiftSyntaxParser"]
     ),
     .executableTarget(
-        name: "SwiftSyntaxBuilderGeneration",
-        dependencies: ["SwiftSyntaxBuilder"],
-        path: "Sources/SwiftSyntaxBuilderGeneration"
+      name: "SwiftSyntaxBuilderGeneration",
+      dependencies: ["SwiftSyntaxBuilder",
+                     .product(name: "ArgumentParser", package: "swift-argument-parser"),
+      ],
+      path: "Sources/SwiftSyntaxBuilderGeneration"
     ),
     .testTarget(
       name: "SwiftSyntaxTest",
